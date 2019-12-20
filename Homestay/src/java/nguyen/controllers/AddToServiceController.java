@@ -1,0 +1,109 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package nguyen.controllers;
+
+import java.io.IOException;
+import java.util.Map;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import nguyen.models.Cart;
+import nguyen.models.InvoiceDTO;
+import nguyen.models.ServiceDTO;
+
+/**
+ *
+ * @author Gabriel Nguyen
+ */
+public class AddToServiceController extends HttpServlet {
+
+    private static final String SUCCESS = "checkOut.jsp";
+    private static final String ERROR = "error.jsp";
+
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     *
+\     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        String url = ERROR;
+        try {
+            HttpSession session = request.getSession();
+            Cart shoppingCart = (Cart) session.getAttribute("CART");
+            if (shoppingCart == null) {
+                url = ERROR;
+            }
+            // hình nhu id cua room là 3 service là 1 nên nó duplicate 
+            String serviceName = request.getParameter("serviceName");
+            int serviceID = Integer.parseInt(request.getParameter("serviceID"));
+            int servicePrice = Integer.parseInt(request.getParameter("servicePrice"));
+            int serviceQuantity = Integer.parseInt(request.getParameter("serviceQuantity"));
+            Map<String, InvoiceDTO> cart = shoppingCart.getCart();
+            if (cart != null) {// tu tu
+                InvoiceDTO dto = cart.get(request.getParameter("txtRoomID"));
+                dto.setServiceID(serviceID);
+                dto.setServiceName(serviceName);
+                dto.setServicePrice(servicePrice);
+                dto.setServiceQuantity(serviceQuantity);
+                shoppingCart.addToServiceCart(dto);
+                session.setAttribute("CART", shoppingCart);
+                url = SUCCESS;
+            }
+        } catch (Exception e) {
+            log("Error at addtoserviceController: " + e.getMessage());
+        } finally {
+            request.getRequestDispatcher(url).forward(request, response);
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     *
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+    }// </editor-fold>
+
+}
